@@ -32,9 +32,9 @@ public class SplashActivity extends AppCompatActivity {
         sharedPreferences=getSharedPreferences("save", Context.MODE_PRIVATE);
         boolean flag=sharedPreferences.getBoolean("value",false);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
+        Thread thread= new Thread(() -> {
+            try {
+                Thread.sleep(2000);
                 if(flag){
                     startActivity(new Intent(SplashActivity.this, AuthActivity.class));
                     finish();
@@ -45,7 +45,10 @@ public class SplashActivity extends AppCompatActivity {
                     startActivity(new Intent(SplashActivity.this, IntroActivity.class));
                     finish();
                 }
+            } catch (Exception e){
+                e.printStackTrace();
             }
-        }, 2000);
+        });
+        thread.start();
     }
 }
