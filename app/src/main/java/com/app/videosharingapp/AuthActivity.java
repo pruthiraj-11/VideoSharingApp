@@ -57,11 +57,11 @@ public class AuthActivity extends AppCompatActivity {
         dialog.setTitle("Login");
         dialog.setMessage("Login to your account");
 
-//        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//                .requestIdToken(getString(R.string.default_web_client_id))
-//                .requestEmail()
-//                .build();
-//        googleSignInClient = GoogleSignIn.getClient(AuthActivity.this, googleSignInOptions);
+        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(AuthActivity.this, googleSignInOptions);
         binding.gin.setOnClickListener((View.OnClickListener) view -> {
             Intent intent = googleSignInClient.getSignInIntent();
             startActivityForResult(intent, 100);
@@ -109,8 +109,8 @@ public class AuthActivity extends AppCompatActivity {
                         AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
                         firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
-                                startActivity(new Intent(AuthActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                                Toast.makeText(AuthActivity.this,"Firebase authentication successful", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(AuthActivity.this, MainActivity2.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+//                                Toast.makeText(AuthActivity.this,"Firebase authentication successful", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(AuthActivity.this,"Authentication Failed :" + Objects.requireNonNull(task.getException()).getMessage(),Toast.LENGTH_SHORT).show();
                             }
