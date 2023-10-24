@@ -32,16 +32,19 @@ public class SplashActivity extends AppCompatActivity {
         sharedPreferences=getSharedPreferences("save", Context.MODE_PRIVATE);
         boolean flag=sharedPreferences.getBoolean("value",false);
 
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if(flag){
-                startActivity(new Intent(SplashActivity.this, AuthActivity.class));
-                finish();
-            } else {
-                editor=getSharedPreferences("save",MODE_PRIVATE).edit();
-                editor.putBoolean("value",true);
-                editor.apply();
-                startActivity(new Intent(SplashActivity.this, IntroActivity.class));
-                finish();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(flag){
+                    startActivity(new Intent(SplashActivity.this, AuthActivity.class));
+                    finish();
+                } else {
+                    editor=getSharedPreferences("save",MODE_PRIVATE).edit();
+                    editor.putBoolean("value",true);
+                    editor.apply();
+                    startActivity(new Intent(SplashActivity.this, IntroActivity.class));
+                    finish();
+                }
             }
         }, 2000);
     }
