@@ -8,9 +8,9 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.app.videosharingapp.ui.likedvideos.LikedVideosFragment;
 import com.app.videosharingapp.ui.myvideos.MyVideosFragment;
 
-public class  ViewPagerAdapter extends FragmentPagerAdapter {
+public class FragmentAdapter extends FragmentPagerAdapter {
 
-    public ViewPagerAdapter(@NonNull FragmentManager fm) {
+    public FragmentAdapter(@NonNull FragmentManager fm) {
         super(fm);
     }
 
