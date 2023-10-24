@@ -12,6 +12,8 @@ import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Objects;
+
 public class SplashActivity extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
@@ -21,6 +23,8 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        Objects.requireNonNull(getSupportActionBar()).hide();
+
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT){
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
@@ -28,19 +32,16 @@ public class SplashActivity extends AppCompatActivity {
         sharedPreferences=getSharedPreferences("save", Context.MODE_PRIVATE);
         boolean flag=sharedPreferences.getBoolean("value",false);
 
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(flag){
-                    startActivity(new Intent(SplashActivity.this, AuthActivity.class));
-                    finish();
-                } else {
-                    editor=getSharedPreferences("save",MODE_PRIVATE).edit();
-                    editor.putBoolean("value",true);
-                    editor.apply();
-                    startActivity(new Intent(SplashActivity.this, IntroActivity.class));
-                    finish();
-                }
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if(flag){
+                startActivity(new Intent(SplashActivity.this, AuthActivity.class));
+                finish();
+            } else {
+                editor=getSharedPreferences("save",MODE_PRIVATE).edit();
+                editor.putBoolean("value",true);
+                editor.apply();
+                startActivity(new Intent(SplashActivity.this, IntroActivity.class));
+                finish();
             }
         }, 2000);
     }

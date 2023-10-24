@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.videosharingapp.databinding.ActivityIntroBinding;
 
+import java.util.Objects;
+
 public class IntroActivity extends AppCompatActivity {
 
     ActivityIntroBinding binding;
@@ -18,6 +20,8 @@ public class IntroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding=ActivityIntroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT){
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);

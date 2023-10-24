@@ -1,5 +1,6 @@
 package com.app.videosharingapp;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,8 @@ public class MainActivity2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        getWindow().setStatusBarColor(Color.parseColor("#f3ecf8"));
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_home, R.id.navigation_create, R.id.navigation_profile, R.id.navigation_notifications)
