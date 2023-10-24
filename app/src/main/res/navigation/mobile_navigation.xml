@@ -12,6 +12,12 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
+        android:id="@+id/navigation_create"
+        android:name="com.app.videosharingapp.ui.create.CreateFragment"
+        android:label="@string/title_create"
+        tools:layout="@layout/fragment_create" />
+
+    <fragment
         android:id="@+id/navigation_profile"
         android:name="com.app.videosharingapp.ui.profile.ProfileFragment"
         android:label="@string/title_profile"

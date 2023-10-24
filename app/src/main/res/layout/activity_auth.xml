@@ -22,11 +22,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:textStyle="bold"
-        android:textSize="30sp"
-        android:textColor="#ffffff"
+        android:layout_marginTop="34dp"
         android:text="Hi, \nPlease Login"
+        android:textColor="#ffffff"
+        android:textSize="30sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -89,6 +89,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:text="New to app"
+        android:textColor="#36AFE6"
         android:textStyle="bold"
         android:layout_marginTop="32dp"/>
 
