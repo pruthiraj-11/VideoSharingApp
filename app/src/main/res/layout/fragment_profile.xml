@@ -39,7 +39,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imageView6"
+                android:id="@+id/userdp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/profile"
@@ -51,7 +51,7 @@
                 app:layout_constraintTop_toTopOf="@+id/view3" />
 
             <TextView
-                android:id="@+id/textView6"
+                android:id="@+id/useridprofile"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -59,9 +59,9 @@
                 android:textColor="#ffffff"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="@+id/imageView6"
-                app:layout_constraintStart_toStartOf="@+id/imageView6"
-                app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+                app:layout_constraintEnd_toEndOf="@+id/userdp"
+                app:layout_constraintStart_toStartOf="@+id/userdp"
+                app:layout_constraintTop_toBottomOf="@+id/userdp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -81,7 +81,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/textView11"
+                        android:id="@+id/followerscount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="74"
@@ -105,7 +105,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/textView13"
+                        android:id="@+id/followingcount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="74"
@@ -129,7 +129,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/textView15"
+                        android:id="@+id/videoscount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="74"
