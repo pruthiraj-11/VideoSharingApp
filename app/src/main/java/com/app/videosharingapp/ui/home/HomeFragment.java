@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.app.videosharingapp.Adapters.FragmentAdapter;
 import com.app.videosharingapp.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {

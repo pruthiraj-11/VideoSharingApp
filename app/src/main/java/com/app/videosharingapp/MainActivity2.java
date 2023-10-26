@@ -25,7 +25,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         Objects.requireNonNull(getSupportActionBar()).hide();
 
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setStatusBarColor(Color.parseColor("#03cd48"));
 
 //        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
 //                R.id.navigation_home, R.id.navigation_create, R.id.navigation_profile, R.id.navigation_notifications)

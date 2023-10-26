@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.Camera;
@@ -75,8 +78,20 @@ public class CreateFragment extends Fragment {
         binding=FragmentCreateBinding.inflate(inflater,container,false);
 
         startCamera(cameraFacing);
+        ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri o) {
+                final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
+                assert o != null;
+                storageReference.putFile(o).addOnSuccessListener(taskSnapshot ->
+                        storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
+
+                        }));
+            }
+        });
+
         binding.capture.setOnClickListener(view -> captureVideo());
-        binding.pickVideo.setOnClickListener(view -> pickVideoFromGallery());
+        binding.pickVideo.setOnClickListener(view -> activityResultLauncher.launch("video/*"));
         binding.flipCamera.setOnClickListener(view -> {
             if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
                 cameraFacing = CameraSelector.LENS_FACING_FRONT;
@@ -87,28 +102,6 @@ public class CreateFragment extends Fragment {
         });
         service = Executors.newSingleThreadExecutor();
         return binding.getRoot();
-    }
-
-    private void pickVideoFromGallery() {
-        Intent intent = new Intent();
-        intent.setType("video/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,"Select video"),REQUEST_TAKE_GALLERY_VIDEO);
-    }
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_TAKE_GALLERY_VIDEO) {
-                assert data != null;
-                Uri selectedImageUri = data.getData();
-                final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
-                assert selectedImageUri != null;
-                storageReference.putFile(selectedImageUri).addOnSuccessListener(taskSnapshot ->
-                        storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
-
-                        }));
-            }
-        }
     }
 
     public void captureVideo() {
@@ -128,7 +121,8 @@ public class CreateFragment extends Fragment {
         MediaStoreOutputOptions options = new MediaStoreOutputOptions.Builder(requireActivity().getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
                 .setContentValues(contentValues).build();
 
-        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if ((ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) &&
+                (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
             Toast.makeText(getContext(), "Permission required", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -137,8 +131,8 @@ public class CreateFragment extends Fragment {
                 binding.capture.setEnabled(true);
             } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
                 if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
-                    String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
-                    Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+//                    String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
+                    Toast.makeText(getContext(), "Video capture succeeded", Toast.LENGTH_SHORT).show();
                     final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
                     storageReference.putFile(((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -157,8 +151,10 @@ public class CreateFragment extends Fragment {
                         }
                     });
                 } else {
-                    recording.close();
-                    recording = null;
+                    if(recording!=null){
+                        recording.close();
+                        recording = null;
+                    }
                     String msg = "Error: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getError();
                     Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                 }
@@ -169,22 +165,18 @@ public class CreateFragment extends Fragment {
 
     public void startCamera(int cameraFacing) {
         ListenableFuture<ProcessCameraProvider> processCameraProvider = ProcessCameraProvider.getInstance(requireActivity());
-
         processCameraProvider.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = processCameraProvider.get();
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
 
-                Recorder recorder = new Recorder.Builder()
-                        .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
-                        .build();
+                Recorder recorder = new Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build();
                 videoCapture = VideoCapture.withOutput(recorder);
 
                 cameraProvider.unbindAll();
 
-                CameraSelector cameraSelector = new CameraSelector.Builder()
-                        .requireLensFacing(cameraFacing).build();
+                CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraFacing).build();
 
                 Camera camera = cameraProvider.bindToLifecycle(getViewLifecycleOwner(), cameraSelector, preview, videoCapture);
 
@@ -195,7 +187,7 @@ public class CreateFragment extends Fragment {
         }, ContextCompat.getMainExecutor(requireActivity()));
     }
 
-    private void toggleFlash(Camera camera) {
+    private void toggleFlash(@NonNull Camera camera) {
         if (camera.getCameraInfo().hasFlashUnit()) {
             if (camera.getCameraInfo().getTorchState().getValue() == 0) {
                 camera.getCameraControl().enableTorch(true);

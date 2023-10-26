@@ -40,15 +40,36 @@
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/userdp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="117dp"
+                android:layout_height="117dp"
                 android:src="@drawable/profile"
                 app:civ_border_color="@color/white"
-                app:civ_border_width="5dp"
+                app:civ_border_width="2dp"
                 app:layout_constraintBottom_toBottomOf="@+id/view3"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/imageView5"
                 app:layout_constraintTop_toTopOf="@+id/view3" />
+
+            <LinearLayout
+                android:id="@+id/profilepicker"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:background="@drawable/green_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toTopOf="@+id/useridprofile"
+                app:layout_constraintEnd_toEndOf="@+id/userdp"
+                app:layout_constraintHorizontal_bias="0.85"
+                app:layout_constraintStart_toStartOf="@+id/userdp"
+                app:layout_constraintTop_toTopOf="@+id/userdp"
+                app:layout_constraintVertical_bias="0.86">
+
+                <ImageView
+                    android:id="@+id/imageView6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/baseline_photo_camera_24" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/useridprofile"
