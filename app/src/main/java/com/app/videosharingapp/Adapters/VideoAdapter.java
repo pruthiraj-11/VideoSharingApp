@@ -1,6 +1,7 @@
 package com.app.videosharingapp.Adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.videosharingapp.Models.VideoModel;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.VideoItemsBinding;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -33,9 +35,11 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoHolder>
 
     @Override
     public void onBindViewHolder(@NonNull VideoHolder holder, int position) {
-        holder.binding.videoView.setVideoURI(list.get(position).getUri());
+        Uri uri = Uri.parse(list.get(position).getVideoURL());
+        holder.binding.videoView.setVideoURI(uri);
 //        holder.binding.usernameid.setText(list.get(position).getUsername());
-//        holder.binding.userprofilepic.setImageResource(list.get(position).getProfile());
+
+//        Picasso.get().lo
 
         holder.binding.videoView.setOnPreparedListener(mediaPlayer -> {
             mediaPlayer.start();
