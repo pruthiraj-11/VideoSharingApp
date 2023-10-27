@@ -23,7 +23,6 @@ public class MainActivity2 extends AppCompatActivity {
         binding = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Objects.requireNonNull(getSupportActionBar()).hide();
 
         getWindow().setStatusBarColor(Color.parseColor("#03cd48"));
 

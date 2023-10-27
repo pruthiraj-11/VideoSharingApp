@@ -53,7 +53,6 @@ import java.util.concurrent.Executors;
 
 public class CreateFragment extends Fragment {
 
-    private static final int REQUEST_TAKE_GALLERY_VIDEO = 74;
     FragmentCreateBinding binding;
     FirebaseAuth firebaseAuth;
     FirebaseStorage firebaseStorage;
