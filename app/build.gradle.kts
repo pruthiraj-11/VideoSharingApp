@@ -55,6 +55,10 @@ dependencies {
     implementation("androidx.camera:camera-view:1.2.2")
     implementation("androidx.camera:camera-extensions:1.2.2")
 
+    implementation("com.intuit.sdp:sdp-android:1.1.0")
+
+    implementation("com.intuit.ssp:ssp-android:1.1.0")
+
     implementation("com.google.firebase:firebase-auth:22.2.0")
     implementation("com.google.firebase:firebase-database:20.3.0")
     implementation("androidx.navigation:navigation-fragment:2.7.4")

@@ -3,12 +3,14 @@ package com.app.videosharingapp.ui.create;
 import static android.app.Activity.RESULT_OK;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +35,7 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.app.videosharingapp.AuthActivity;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.FragmentCreateBinding;
 import com.google.android.gms.tasks.OnCanceledListener;
@@ -46,6 +49,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +58,7 @@ import java.util.concurrent.Executors;
 public class CreateFragment extends Fragment {
 
     FragmentCreateBinding binding;
+    ProgressDialog dialog;
     FirebaseAuth firebaseAuth;
     FirebaseStorage firebaseStorage;
     ExecutorService service;
@@ -63,6 +68,7 @@ public class CreateFragment extends Fragment {
     private final int REQUEST_CODE_PERMISSIONS = 1001;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
     public CreateFragment() {
+
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,15 +83,22 @@ public class CreateFragment extends Fragment {
         binding=FragmentCreateBinding.inflate(inflater,container,false);
 
         startCamera(cameraFacing);
+        dialog=new ProgressDialog(getContext());
+        dialog.setTitle("Tiktok");
+        dialog.setMessage("Uploading your video.");
         ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri o) {
+                dialog.show();
                 final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
                 assert o != null;
-                storageReference.putFile(o).addOnSuccessListener(taskSnapshot ->
-                        storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
-
-                        }));
+                storageReference.putFile(o).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        dialog.dismiss();
+                        Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
@@ -115,7 +128,7 @@ public class CreateFragment extends Fragment {
         ContentValues contentValues = new ContentValues();
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-        contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/Tiktok");
+        contentValues.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/Tiktok/MyVideos");
 
         MediaStoreOutputOptions options = new MediaStoreOutputOptions.Builder(requireActivity().getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
                 .setContentValues(contentValues).build();
@@ -132,10 +145,12 @@ public class CreateFragment extends Fragment {
                 if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
 //                    String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
                     Toast.makeText(getContext(), "Video capture succeeded", Toast.LENGTH_SHORT).show();
+                    dialog.show();
                     final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
                     storageReference.putFile(((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            dialog.dismiss();
                             Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
                         }
                     }).addOnCanceledListener(new OnCanceledListener() {
