@@ -1,26 +1,19 @@
 package com.app.videosharingapp.ui.create;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.Preview;
@@ -35,21 +28,15 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.app.videosharingapp.AuthActivity;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.FragmentCreateBinding;
-import com.google.android.gms.tasks.OnCanceledListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -87,23 +74,17 @@ public class CreateFragment extends Fragment {
         dialog.setTitle("Tiktok");
         dialog.setMessage("Uploading your video.");
         dialog.setCanceledOnTouchOutside(false);
-        ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
-            @Override
-            public void onActivityResult(Uri o) {
-                dialog.show();
-                if(o!=null){
-                    final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos");
-                    storageReference.putFile(o).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            dialog.dismiss();
-                            Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
+        ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), o -> {
+            dialog.show();
+            if(o!=null){
+                final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos");
+                storageReference.putFile(o).addOnSuccessListener(taskSnapshot -> {
                     dialog.dismiss();
-                    Toast.makeText(getContext(),"Video not picked",Toast.LENGTH_SHORT).show();
-                }
+                    Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                dialog.dismiss();
+                Toast.makeText(getContext(),"Video not picked",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -153,23 +134,10 @@ public class CreateFragment extends Fragment {
                     dialog.show();
                     String videoID = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
                     final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos").child(videoID);
-                    storageReference.putFile(((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            dialog.dismiss();
-                            Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnCanceledListener(new OnCanceledListener() {
-                        @Override
-                        public void onCanceled() {
-                            Toast.makeText(getContext(),"Cancelled by the user",Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getContext(), e.getMessage(),Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    storageReference.putFile(((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri()).addOnSuccessListener(taskSnapshot -> {
+                        dialog.dismiss();
+                        Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
+                    }).addOnCanceledListener(() -> Toast.makeText(getContext(),"Cancelled by the user",Toast.LENGTH_SHORT).show()).addOnFailureListener(e -> Toast.makeText(getContext(), e.getMessage(),Toast.LENGTH_SHORT).show());
                 } else {
                     if(recording!=null){
                         recording.close();
