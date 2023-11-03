@@ -86,19 +86,24 @@ public class CreateFragment extends Fragment {
         dialog=new ProgressDialog(getContext());
         dialog.setTitle("Tiktok");
         dialog.setMessage("Uploading your video.");
+        dialog.setCanceledOnTouchOutside(false);
         ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri o) {
                 dialog.show();
-                final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
-                assert o != null;
-                storageReference.putFile(o).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        dialog.dismiss();
-                        Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if(o!=null){
+                    final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos");
+                    storageReference.putFile(o).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            dialog.dismiss();
+                            Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    dialog.dismiss();
+                    Toast.makeText(getContext(),"Video not picked",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -146,7 +151,8 @@ public class CreateFragment extends Fragment {
 //                    String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
                     Toast.makeText(getContext(), "Video capture succeeded", Toast.LENGTH_SHORT).show();
                     dialog.show();
-                    final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
+                    String videoID = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
+                    final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos").child(videoID);
                     storageReference.putFile(((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {

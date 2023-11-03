@@ -1,6 +1,7 @@
 package com.app.videosharingapp;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -9,6 +10,8 @@ import android.provider.Settings;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,6 +27,8 @@ import java.util.List;
 public class IntroActivity extends AppCompatActivity {
 
     ActivityIntroBinding binding;
+    private ActivityResultLauncher<Intent> settingsLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,16 +38,22 @@ public class IntroActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT){
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
-
+        settingsLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // Handle the result if needed
+                    }
+                }
+        );
         requestPermissions();
-
         binding.gs.setOnClickListener(v -> {
             startActivity(new Intent(IntroActivity.this, AuthActivity.class));
             finish();
         });
     }
     private void requestPermissions() {
-        Dexter.withActivity(this)
+        Dexter.withContext(getApplicationContext())
                 .withPermissions(Manifest.permission.CAMERA,
                         Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.READ_CONTACTS,
@@ -56,7 +67,7 @@ public class IntroActivity extends AppCompatActivity {
                         if (multiplePermissionsReport.areAllPermissionsGranted()) {
                             Toast.makeText(IntroActivity.this, "All the permissions are granted", Toast.LENGTH_SHORT).show();
                         }
-                        if (multiplePermissionsReport.isAnyPermissionPermanentlyDenied()) {
+                        else if (multiplePermissionsReport.isAnyPermissionPermanentlyDenied()) {
                             showSettingsDialog();
                         }
                     }
@@ -70,6 +81,7 @@ public class IntroActivity extends AppCompatActivity {
 
     private void showSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(IntroActivity.this);
+        builder.setCancelable(false);
         builder.setTitle("Need Permissions");
         builder.setMessage("This app needs permission to use this feature. You can grant them in app settings.");
         builder.setPositiveButton("Goto Settings", (dialog, which) -> {
@@ -77,7 +89,8 @@ public class IntroActivity extends AppCompatActivity {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             Uri uri = Uri.fromParts("package", getPackageName(), null);
             intent.setData(uri);
-            startActivityForResult(intent, 101);
+//            startActivityForResult(intent, 101);
+            settingsLauncher.launch(intent);
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
