@@ -1,15 +1,13 @@
 package com.app.videosharingapp.Models;
 
-import android.net.Uri;
-
 public class VideoModel {
     String videoURL;
-    int profile;
+    String profileURL;
     String username;
 
-    public VideoModel(String videoURL, int profile, String username) {
+    public VideoModel(String videoURL, String profileURL, String username) {
         this.videoURL= videoURL;
-        this.profile = profile;
+        this.profileURL = profileURL;
         this.username = username;
     }
 
@@ -21,16 +19,16 @@ public class VideoModel {
         this.videoURL = videoURL;
     }
 
-    public int getProfile() {
-        return profile;
-    }
-
-    public void setProfile(int profile) {
-        this.profile = profile;
-    }
-
     public String getUsername() {
         return username;
+    }
+
+    public String getProfileURL() {
+        return profileURL;
+    }
+
+    public void setProfileURL(String profileURL) {
+        this.profileURL = profileURL;
     }
 
     public void setUsername(String username) {
