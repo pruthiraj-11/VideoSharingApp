@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -28,10 +29,14 @@ import androidx.camera.video.VideoRecordEvent;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.app.videosharingapp.Models.UserModel;
+import com.app.videosharingapp.Models.VideoModel;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.FragmentCreateBinding;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -48,6 +53,7 @@ public class CreateFragment extends Fragment {
     ProgressDialog dialog;
     FirebaseAuth firebaseAuth;
     FirebaseStorage firebaseStorage;
+    FirebaseDatabase firebaseDatabase;
     ExecutorService service;
     Recording recording = null;
     VideoCapture<Recorder> videoCapture = null;
@@ -61,6 +67,7 @@ public class CreateFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         firebaseAuth=FirebaseAuth.getInstance();
+        firebaseDatabase=FirebaseDatabase.getInstance();
         firebaseStorage=FirebaseStorage.getInstance();
     }
 
@@ -79,6 +86,15 @@ public class CreateFragment extends Fragment {
             if(o!=null){
                 final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos");
                 storageReference.putFile(o).addOnSuccessListener(taskSnapshot -> {
+                    storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            VideoModel videoModel=new VideoModel();
+                            videoModel.setVideoURL(uri.toString());
+                            videoModel.setUsername("Sanmati");
+                            firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").setValue(videoModel);
+                        }
+                    });
                     dialog.dismiss();
                     Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
                 });
@@ -135,6 +151,15 @@ public class CreateFragment extends Fragment {
                     String videoID = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
                     final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos").child(videoID);
                     storageReference.putFile(((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri()).addOnSuccessListener(taskSnapshot -> {
+                        storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                VideoModel videoModel=new VideoModel();
+                                videoModel.setVideoURL(uri.toString());
+                                videoModel.setUsername("Sanmati");
+                                firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").setValue(videoModel);
+                            }
+                        });
                         dialog.dismiss();
                         Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
                     }).addOnCanceledListener(() -> Toast.makeText(getContext(),"Cancelled by the user",Toast.LENGTH_SHORT).show()).addOnFailureListener(e -> Toast.makeText(getContext(), e.getMessage(),Toast.LENGTH_SHORT).show());

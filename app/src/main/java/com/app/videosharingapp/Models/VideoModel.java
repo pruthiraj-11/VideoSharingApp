@@ -5,6 +5,7 @@ public class VideoModel {
     String profileURL;
     String username;
 
+    public VideoModel(){}
     public VideoModel(String videoURL, String profileURL, String username) {
         this.videoURL= videoURL;
         this.profileURL = profileURL;
