@@ -1,10 +1,10 @@
 package com.app.videosharingapp.Models;
 
 public class UserModel {
-    String profilepic, username, mail,password,userId,status,phonenumber;
+    String profilepicURL, username, mail,password,userId,status,phonenumber;
 
-    public UserModel(String profilepic, String username, String mail, String password, String userId, String lastmessage,String status) {
-        this.profilepic = profilepic;
+    public UserModel(String profilepicURL, String username, String mail, String password, String userId, String lastmessage,String status) {
+        this.profilepicURL = profilepicURL;
         this.username = username;
         this.mail = mail;
         this.password = password;
@@ -35,12 +35,12 @@ public class UserModel {
         this.status = status;
     }
 
-    public String getProfilepic() {
-        return profilepic;
+    public String getProfilepicURL() {
+        return profilepicURL;
     }
 
-    public void setProfilepic(String profilepic) {
-        this.profilepic = profilepic;
+    public void setProfilepicURL(String profilepicURL) {
+        this.profilepicURL = profilepicURL;
     }
 
     public String getUsername() {
