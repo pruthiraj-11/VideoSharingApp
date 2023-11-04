@@ -15,17 +15,20 @@ import androidx.fragment.app.Fragment;
 import com.app.videosharingapp.Adapters.FragmentAdapter;
 import com.app.videosharingapp.databinding.FragmentProfileBinding;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 
 public class ProfileFragment extends Fragment {
 
     private FragmentProfileBinding binding;
     private FirebaseAuth firebaseAuth;
+    FirebaseDatabase firebaseDatabase;
     private FirebaseStorage firebaseStorage;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        firebaseDatabase=FirebaseDatabase.getInstance();
         firebaseAuth= FirebaseAuth.getInstance();
         firebaseStorage= FirebaseStorage.getInstance();
     }
@@ -42,12 +45,7 @@ public class ProfileFragment extends Fragment {
                 binding.userdp.setImageURI(o);
             }
         });
-        binding.profilepicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                activityResultLauncher.launch("image/*");
-            }
-        });
+        binding.profilepicker.setOnClickListener(view -> activityResultLauncher.launch("image/*"));
         return root;
     }
 
