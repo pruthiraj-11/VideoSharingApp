@@ -2,8 +2,33 @@ package com.app.videosharingapp.Models;
 
 public class UserModel {
     String profilepicURL, username, mail,password,userId,status,phonenumber;
+    int followersCount,followingCount,videosCount;
 
-    public UserModel(String profilepicURL, String username, String mail, String password, String userId, String lastmessage,String status) {
+    public int getFollowersCount() {
+        return followersCount;
+    }
+
+    public void setFollowersCount(int followersCount) {
+        this.followersCount = followersCount;
+    }
+
+    public int getFollowingCount() {
+        return followingCount;
+    }
+
+    public void setFollowingCount(int followingCount) {
+        this.followingCount = followingCount;
+    }
+
+    public int getVideosCount() {
+        return videosCount;
+    }
+
+    public void setVideosCount(int videosCount) {
+        this.videosCount = videosCount;
+    }
+
+    public UserModel(String profilepicURL, String username, String mail, String password, String userId, String status) {
         this.profilepicURL = profilepicURL;
         this.username = username;
         this.mail = mail;
