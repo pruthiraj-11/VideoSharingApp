@@ -42,7 +42,7 @@
                 android:id="@+id/userdp"
                 android:layout_width="117dp"
                 android:layout_height="117dp"
-                android:src="@drawable/profile"
+                android:src="@drawable/ic_action_name"
                 app:civ_border_color="@color/white"
                 app:civ_border_width="2dp"
                 app:layout_constraintBottom_toBottomOf="@+id/view3"

@@ -84,15 +84,13 @@ public class CreateFragment extends Fragment {
         ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), o -> {
             dialog.show();
             if(o!=null){
-                final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos");
+                String videoID = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
+                final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos").child(videoID);
                 storageReference.putFile(o).addOnSuccessListener(taskSnapshot -> {
                     storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            VideoModel videoModel=new VideoModel();
-                            videoModel.setVideoURL(uri.toString());
-                            videoModel.setUsername("Sanmati");
-                            firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").setValue(videoModel);
+                            firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").child(videoID).setValue(uri.toString());
                         }
                     });
                     dialog.dismiss();
@@ -154,10 +152,7 @@ public class CreateFragment extends Fragment {
                         storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
-                                VideoModel videoModel=new VideoModel();
-                                videoModel.setVideoURL(uri.toString());
-                                videoModel.setUsername("Sanmati");
-                                firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").setValue(videoModel);
+                                firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").child(videoID).setValue(uri.toString());
                             }
                         });
                         dialog.dismiss();
