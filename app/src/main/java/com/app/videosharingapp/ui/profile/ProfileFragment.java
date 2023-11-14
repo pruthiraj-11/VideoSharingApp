@@ -4,6 +4,7 @@ import static android.app.Activity.RESULT_OK;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -99,9 +100,12 @@ public class ProfileFragment extends Fragment {
 
         ActivityResultLauncher<Intent> launcher=registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
             if (o.getResultCode()== RESULT_OK && o.getData()!=null){
-                Intent data=o.getData();
-
-                binding.userdp.setImageURI(data.getData());
+                Bundle bundle=o.getData().getExtras();
+                Bitmap bitmap= null;
+                if (bundle != null) {
+                    bitmap = (Bitmap) bundle.get("data");
+                }
+                binding.userdp.setImageBitmap(bitmap);
             } else {
                 Toast.makeText(requireContext(),"Profile picture not captured",Toast.LENGTH_SHORT).show();
             }
