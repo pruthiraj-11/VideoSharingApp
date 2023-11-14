@@ -83,7 +83,7 @@ public class ProfileFragment extends Fragment {
                         @Override
                         public void onSuccess(Uri uri) {
                             firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("profilepicURL").setValue(uri.toString());
-                            Toast.makeText(getContext(),"Profile Picture Uploaded",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(),"Profile picture uploaded successfully",Toast.LENGTH_SHORT).show();
                         }
                     });
                 }).addOnFailureListener(new OnFailureListener() {
@@ -93,16 +93,17 @@ public class ProfileFragment extends Fragment {
                     }
                 });
             } else {
-                Toast.makeText(requireContext(),"Profile not picked",Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),"Profile picture not picked",Toast.LENGTH_SHORT).show();
             }
         });
 
         ActivityResultLauncher<Intent> launcher=registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
             if (o.getResultCode()== RESULT_OK && o.getData()!=null){
                 Intent data=o.getData();
+
                 binding.userdp.setImageURI(data.getData());
             } else {
-                Toast.makeText(requireContext(),"Profile not captured",Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),"Profile picture not captured",Toast.LENGTH_SHORT).show();
             }
         });
 
