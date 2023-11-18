@@ -32,8 +32,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
@@ -101,11 +103,15 @@ public class ProfileFragment extends Fragment {
         ActivityResultLauncher<Intent> launcher=registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
             if (o.getResultCode()== RESULT_OK && o.getData()!=null){
                 Bundle bundle=o.getData().getExtras();
+                Intent intent=o.getData();
                 Bitmap bitmap= null;
                 if (bundle != null) {
                     bitmap = (Bitmap) bundle.get("data");
                 }
                 binding.userdp.setImageBitmap(bitmap);
+                if (bitmap != null) {
+                    uploadImage(bitmap);
+                }
             } else {
                 Toast.makeText(requireContext(),"Profile picture not captured",Toast.LENGTH_SHORT).show();
             }
@@ -131,6 +137,31 @@ public class ProfileFragment extends Fragment {
             bottomSheetDialog.show();
         });
         return root;
+    }
+
+    private void uploadImage(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] data = byteArrayOutputStream.toByteArray();
+        final StorageReference storageReference= firebaseStorage.getReference().child("user_profile_pic").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
+        UploadTask uploadTask = storageReference.putBytes(data);
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("profilepicURL").setValue(uri.toString());
+                        Toast.makeText(getContext(),"Profile picture uploaded successfully",Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
