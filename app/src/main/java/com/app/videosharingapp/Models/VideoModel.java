@@ -1,10 +1,15 @@
 package com.app.videosharingapp.Models;
 
+import java.util.ArrayList;
+
 public class VideoModel {
     String videoURL;
     String profileURL;
     String username;
-
+    String videothumbnailpic;
+    int likescount;
+    int dislikescount;
+    ArrayList<String> commentsList;
     public VideoModel(){}
     public VideoModel(String videoURL, String profileURL, String username) {
         this.videoURL= videoURL;
