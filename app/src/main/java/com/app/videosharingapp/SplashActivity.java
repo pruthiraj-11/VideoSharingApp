@@ -28,8 +28,8 @@ public class SplashActivity extends AppCompatActivity {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
 
-        sharedPreferences=getSharedPreferences("save", Context.MODE_PRIVATE);
-        boolean flag=sharedPreferences.getBoolean("value",false);
+        sharedPreferences=getSharedPreferences("appCache", Context.MODE_PRIVATE);
+        boolean flag=sharedPreferences.getBoolean("isIntroSeen",false);
 
         Thread thread= new Thread(() -> {
             try {
@@ -38,8 +38,8 @@ public class SplashActivity extends AppCompatActivity {
                     startActivity(new Intent(SplashActivity.this, AuthActivity.class));
                     finish();
                 } else {
-                    editor=getSharedPreferences("save",MODE_PRIVATE).edit();
-                    editor.putBoolean("value",true);
+                    editor=getSharedPreferences("appCache",MODE_PRIVATE).edit();
+                    editor.putBoolean("isIntroSeen",true);
                     editor.apply();
                     startActivity(new Intent(SplashActivity.this, IntroActivity.class));
                     finish();

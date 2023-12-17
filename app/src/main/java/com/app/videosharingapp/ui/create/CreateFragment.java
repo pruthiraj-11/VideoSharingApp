@@ -135,7 +135,7 @@ public class CreateFragment extends Fragment {
 
         if ((ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) &&
                 (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
-            Toast.makeText(getContext(), "Permission required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Permission required.", Toast.LENGTH_SHORT).show();
             return;
         }
         recording = videoCapture.getOutput().prepareRecording(requireActivity(), options).withAudioEnabled().start(ContextCompat.getMainExecutor(requireActivity()), videoRecordEvent -> {
@@ -206,7 +206,7 @@ public class CreateFragment extends Fragment {
             }
         }
         else {
-            requireActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Flash is not available currently", Toast.LENGTH_SHORT).show());
+            requireActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Flash is not available currently.", Toast.LENGTH_SHORT).show());
         }
     }
     @Override

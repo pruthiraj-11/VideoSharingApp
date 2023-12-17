@@ -44,12 +44,9 @@ public class AuthActivity extends AppCompatActivity {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
 
-        binding.ntp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(AuthActivity.this, MainActivity.class));
-                finish();
-            }
+        binding.ntp.setOnClickListener(v -> {
+            startActivity(new Intent(AuthActivity.this, MainActivity.class));
+            finish();
         });
 
         auth=FirebaseAuth.getInstance();

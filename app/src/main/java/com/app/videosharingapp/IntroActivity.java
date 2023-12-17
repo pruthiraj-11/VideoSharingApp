@@ -42,7 +42,7 @@ public class IntroActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        // Handle the result if needed
+
                     }
                 }
         );

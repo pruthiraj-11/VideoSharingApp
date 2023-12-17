@@ -42,12 +42,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
 
-        binding.loginacc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,AuthActivity.class));
-                finish();
-            }
+        binding.loginacc.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this,AuthActivity.class));
+            finish();
         });
 
         boolean isNetworkAvail=checkConnection();

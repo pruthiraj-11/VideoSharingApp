@@ -1,16 +1,24 @@
 package com.app.videosharingapp.ui.profile;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.MODE_PRIVATE;
 
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -36,6 +44,7 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
@@ -44,6 +53,10 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private FirebaseStorage firebaseStorage;
+    private LruCache<String, Bitmap> memoryCache;
+    private final String USERPROFILEKEY="userProfilePic";
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,6 +64,14 @@ public class ProfileFragment extends Fragment {
         firebaseDatabase=FirebaseDatabase.getInstance();
         firebaseAuth= FirebaseAuth.getInstance();
         firebaseStorage= FirebaseStorage.getInstance();
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 8;
+        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                return bitmap.getByteCount() / 1024;
+            }
+        };
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
@@ -59,13 +80,20 @@ public class ProfileFragment extends Fragment {
         binding.viewPager.setAdapter(new FragmentAdapter(requireActivity().getSupportFragmentManager()));
         binding.tabLayout.setupWithViewPager(binding.viewPager);
 
-        firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        sharedPreferences=requireContext().getSharedPreferences("appCache", MODE_PRIVATE);
+        boolean flag=sharedPreferences.getBoolean("isProfileCached",false);
+        if (flag){
+            loadBitmap(USERPROFILEKEY);
+        }
+        firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
                     UserModel userModel=snapshot.getValue(UserModel.class);
-                    Picasso.get().load(userModel.getProfilepicURL()).placeholder(R.drawable.ic_action_name).into(binding.userdp);
-                    binding.useridprofile.setText(userModel.getUsername());
+                    if (!flag){
+                        Picasso.get().load(Objects.requireNonNull(userModel).getProfilepicURL()).placeholder(R.drawable.ic_action_name).into(binding.userdp);
+                    }
+                    binding.useridprofile.setText(Objects.requireNonNull(userModel).getUsername());
                     binding.followerscount.setText(userModel.getFollowersCount()+"");
                     binding.followingcount.setText(userModel.getFollowingCount()+"");
                     binding.videoscount.setText(userModel.getVideosCount()+"");
@@ -80,23 +108,30 @@ public class ProfileFragment extends Fragment {
         ActivityResultLauncher<String> activityResultLauncher=registerForActivityResult(new ActivityResultContracts.GetContent(), o -> {
             if(o!=null){
                 binding.userdp.setImageURI(o);
-                final StorageReference storageReference= firebaseStorage.getReference().child("user_profile_pic").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
-                storageReference.putFile(o).addOnSuccessListener(taskSnapshot -> {
-                    storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("profilepicURL").setValue(uri.toString());
-                            Toast.makeText(getContext(),"Profile picture uploaded successfully",Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(),e.getLocalizedMessage(),Toast.LENGTH_SHORT).show();
+                Bitmap bitmap = null;
+                ContentResolver contentResolver = requireContext().getContentResolver();
+                try {
+                    if(Build.VERSION.SDK_INT < 28) {
+                        bitmap = MediaStore.Images.Media.getBitmap(contentResolver, o);
+                    } else {
+                        ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, o);
+                        bitmap = ImageDecoder.decodeBitmap(source);
                     }
-                });
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), "Failed to process image.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                final StorageReference storageReference= firebaseStorage.getReference().child("user_profile_pic").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
+                Bitmap finalBitmap = bitmap;
+                storageReference.putFile(o).addOnSuccessListener(taskSnapshot -> {
+                    storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                        firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("profilepicURL").setValue(uri.toString());
+                        addBitmapToMemoryCache(USERPROFILEKEY, finalBitmap);
+                        Toast.makeText(getContext(),"Profile picture uploaded successfully.",Toast.LENGTH_SHORT).show();
+                    });
+                }).addOnFailureListener(e -> Toast.makeText(getContext(),e.getLocalizedMessage(),Toast.LENGTH_SHORT).show());
             } else {
-                Toast.makeText(requireContext(),"Profile picture not picked",Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),"Profile picture not picked.",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -108,12 +143,13 @@ public class ProfileFragment extends Fragment {
                 if (bundle != null) {
                     bitmap = (Bitmap) bundle.get("data");
                 }
-                binding.userdp.setImageBitmap(bitmap);
                 if (bitmap != null) {
+                    binding.userdp.setImageBitmap(bitmap);
                     uploadImage(bitmap);
+                    addBitmapToMemoryCache(USERPROFILEKEY,bitmap);
                 }
             } else {
-                Toast.makeText(requireContext(),"Profile picture not captured",Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),"Profile picture not captured.",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -148,20 +184,31 @@ public class ProfileFragment extends Fragment {
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("profilepicURL").setValue(uri.toString());
-                        Toast.makeText(getContext(),"Profile picture uploaded successfully",Toast.LENGTH_SHORT).show();
-                    }
+                storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                    firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).child("profilepicURL").setValue(uri.toString());
+                    Toast.makeText(getContext(),"Profile picture uploaded successfully",Toast.LENGTH_SHORT).show();
                 });
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
-            }
-        });
+        }).addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to upload image.", Toast.LENGTH_SHORT).show());
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            memoryCache.put(key,bitmap);
+            editor=requireContext().getSharedPreferences("appCache",MODE_PRIVATE).edit();
+            editor.putBoolean("isProfileCached",true);
+            editor.apply();
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return memoryCache.get(key);
+    }
+    public void loadBitmap(String imageKey) {
+        final Bitmap bitmap = getBitmapFromMemCache(imageKey);
+        if (bitmap != null) {
+            binding.userdp.setImageBitmap(bitmap);
+        }
     }
 
     @Override
