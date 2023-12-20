@@ -5,12 +5,11 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,7 +17,6 @@ import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -30,7 +28,6 @@ import com.app.videosharingapp.Adapters.FragmentAdapter;
 import com.app.videosharingapp.Models.UserModel;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.FragmentProfileBinding;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +42,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
@@ -92,6 +90,13 @@ public class ProfileFragment extends Fragment {
                     UserModel userModel=snapshot.getValue(UserModel.class);
                     if (!flag){
                         Picasso.get().load(Objects.requireNonNull(userModel).getProfilepicURL()).placeholder(R.drawable.ic_action_name).into(binding.userdp);
+                        try {
+                            URL url = new URL(userModel.getProfilepicURL());
+                            Bitmap userprofile = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                            addBitmapToMemoryCache(USERPROFILEKEY,userprofile);
+                        } catch(IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     binding.useridprofile.setText(Objects.requireNonNull(userModel).getUsername());
                     binding.followerscount.setText(userModel.getFollowersCount()+"");

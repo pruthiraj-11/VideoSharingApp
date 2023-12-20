@@ -2,6 +2,7 @@ package com.app.videosharingapp;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -9,10 +10,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.videosharingapp.Models.UserModel;
@@ -22,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements ConnectionReceiver.ReceiverListener {
@@ -86,9 +90,40 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                             });
                 } else {
                     Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Do you want to enable mobile data?");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
+                        enableMobileData();
+                    });
+                    builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
+                        dialog.cancel();
+                    });
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
                 }
             }
         });
+    }
+
+    private void enableMobileData() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        if (connectivityManager != null && telephonyManager != null) {
+            NetworkInfo mobileInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            if (mobileInfo != null) {
+                if (mobileInfo.isConnected() || mobileInfo.isConnectedOrConnecting()) {
+                    return;
+                }
+            }
+            try {
+                Class<?> telephonyClass = Class.forName(telephonyManager.getClass().getName());
+                java.lang.reflect.Method setMobileDataEnabledMethod = telephonyClass.getDeclaredMethod("setDataEnabled", boolean.class);
+                setMobileDataEnabledMethod.invoke(telephonyManager, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private boolean checkConnection() {
