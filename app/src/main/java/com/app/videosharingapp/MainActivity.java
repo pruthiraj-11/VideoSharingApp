@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                                     binding.mailfield.setText("");
                                     binding.passfield.setText("");
                                     binding.retypepass.setText("");
+                                    startActivity(new Intent(MainActivity.this, MainActivity2.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                                    finish();
                                 } else {
                                     final Snackbar snackBar = Snackbar.make(findViewById(android.R.id.content), Objects.requireNonNull(Objects.requireNonNull(task.getException()).getMessage()),Snackbar.LENGTH_SHORT);
                                     snackBar.setAction("Try again", v12 -> snackBar.dismiss());
@@ -90,20 +92,20 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                             });
                 } else {
                     Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setMessage("Do you want to enable mobile data?");
-                    builder.setCancelable(false);
-                    builder.setPositiveButton("Yes", (DialogInterface.OnClickListener) (dialog, which) -> {
-                        enableMobileData();
-                    });
-                    builder.setNegativeButton("No", (DialogInterface.OnClickListener) (dialog, which) -> {
-                        dialog.cancel();
-                    });
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
+                    showEnableMobileDataDialog();
                 }
             }
         });
+    }
+
+    private void showEnableMobileDataDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage("Do you want to enable mobile data?");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Yes", (dialog, which) -> enableMobileData());
+        builder.setNegativeButton("No", (dialog, which) -> dialog.cancel());
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     private void enableMobileData() {
@@ -140,15 +142,20 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
     private void showSnackBar(boolean isConnected) {
         String message;
         int color;
+        boolean flag=false;
         if (isConnected) {
             message = "Back online";
             color = Color.WHITE;
         } else {
             message = "Enable mobile data";
+            flag=true;
             color = Color.RED;
         }
         Snackbar snackbar = Snackbar.make(binding.linearLayoutup, message, Snackbar.LENGTH_LONG);
         snackbar.show();
+        if (flag) {
+            showEnableMobileDataDialog();
+        }
     }
     @Override
     protected void onResume() {

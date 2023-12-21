@@ -200,6 +200,7 @@ public class ProfileFragment extends Fragment {
     public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (getBitmapFromMemCache(key) == null) {
             memoryCache.put(key,bitmap);
+            Toast.makeText(requireContext(), "cached", Toast.LENGTH_SHORT).show();
             editor=requireContext().getSharedPreferences("appCache",MODE_PRIVATE).edit();
             editor.putBoolean("isProfileCached",true);
             editor.apply();

@@ -3,16 +3,11 @@ package com.app.videosharingapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.Objects;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -41,7 +36,7 @@ public class SplashActivity extends AppCompatActivity {
                     editor=getSharedPreferences("appCache",MODE_PRIVATE).edit();
                     editor.putBoolean("isIntroSeen",true);
                     editor.apply();
-                    startActivity(new Intent(SplashActivity.this, IntroActivity.class));
+                    startActivity(new Intent(SplashActivity.this, IntroActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                     finish();
                 }
             } catch (Exception e){
