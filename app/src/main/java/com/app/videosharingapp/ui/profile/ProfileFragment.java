@@ -51,10 +51,6 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private FirebaseStorage firebaseStorage;
-    private LruCache<String, Bitmap> memoryCache;
-    private final String USERPROFILEKEY="userProfilePic";
-    SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,14 +58,6 @@ public class ProfileFragment extends Fragment {
         firebaseDatabase=FirebaseDatabase.getInstance();
         firebaseAuth= FirebaseAuth.getInstance();
         firebaseStorage= FirebaseStorage.getInstance();
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        final int cacheSize = maxMemory / 8;
-        memoryCache = new LruCache<String, Bitmap>(cacheSize) {
-            @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
-                return bitmap.getByteCount() / 1024;
-            }
-        };
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
@@ -78,26 +66,12 @@ public class ProfileFragment extends Fragment {
         binding.viewPager.setAdapter(new FragmentAdapter(requireActivity().getSupportFragmentManager()));
         binding.tabLayout.setupWithViewPager(binding.viewPager);
 
-        sharedPreferences=requireContext().getSharedPreferences("appCache", MODE_PRIVATE);
-        boolean flag=sharedPreferences.getBoolean("isProfileCached",false);
-        if (flag){
-            loadBitmap(USERPROFILEKEY);
-        }
         firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()){
                     UserModel userModel=snapshot.getValue(UserModel.class);
-                    if (!flag){
-                        Picasso.get().load(Objects.requireNonNull(userModel).getProfilepicURL()).placeholder(R.drawable.ic_action_name).into(binding.userdp);
-                        try {
-                            URL url = new URL(userModel.getProfilepicURL());
-                            Bitmap userprofile = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                            addBitmapToMemoryCache(USERPROFILEKEY,userprofile);
-                        } catch(IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    Picasso.get().load(Objects.requireNonNull(userModel).getProfilepicURL()).placeholder(R.drawable.ic_action_name).into(binding.userdp);
                     binding.useridprofile.setText(Objects.requireNonNull(userModel).getUsername());
                     binding.followerscount.setText(userModel.getFollowersCount()+"");
                     binding.followingcount.setText(userModel.getFollowingCount()+"");
@@ -127,11 +101,9 @@ public class ProfileFragment extends Fragment {
                     return;
                 }
                 final StorageReference storageReference= firebaseStorage.getReference().child("user_profile_pic").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid());
-                Bitmap finalBitmap = bitmap;
                 storageReference.putFile(o).addOnSuccessListener(taskSnapshot -> {
                     storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
                         firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("profilepicURL").setValue(uri.toString());
-                        addBitmapToMemoryCache(USERPROFILEKEY, finalBitmap);
                         Toast.makeText(getContext(),"Profile picture uploaded successfully.",Toast.LENGTH_SHORT).show();
                     });
                 }).addOnFailureListener(e -> Toast.makeText(getContext(),e.getLocalizedMessage(),Toast.LENGTH_SHORT).show());
@@ -151,7 +123,6 @@ public class ProfileFragment extends Fragment {
                 if (bitmap != null) {
                     binding.userdp.setImageBitmap(bitmap);
                     uploadImage(bitmap);
-                    addBitmapToMemoryCache(USERPROFILEKEY,bitmap);
                 }
             } else {
                 Toast.makeText(requireContext(),"Profile picture not captured.",Toast.LENGTH_SHORT).show();
@@ -195,26 +166,6 @@ public class ProfileFragment extends Fragment {
                 });
             }
         }).addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to upload image.", Toast.LENGTH_SHORT).show());
-    }
-
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-        if (getBitmapFromMemCache(key) == null) {
-            memoryCache.put(key,bitmap);
-            Toast.makeText(requireContext(), "cached", Toast.LENGTH_SHORT).show();
-            editor=requireContext().getSharedPreferences("appCache",MODE_PRIVATE).edit();
-            editor.putBoolean("isProfileCached",true);
-            editor.apply();
-        }
-    }
-
-    public Bitmap getBitmapFromMemCache(String key) {
-        return memoryCache.get(key);
-    }
-    public void loadBitmap(String imageKey) {
-        final Bitmap bitmap = getBitmapFromMemCache(imageKey);
-        if (bitmap != null) {
-            binding.userdp.setImageBitmap(bitmap);
-        }
     }
 
     @Override

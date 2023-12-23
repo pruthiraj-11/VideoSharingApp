@@ -6,26 +6,29 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.videosharingapp.Models.UserModel;
 import com.app.videosharingapp.databinding.ActivityMainBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements ConnectionReceiver.ReceiverListener {
@@ -41,17 +44,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         binding=ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT){
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
-
-        binding.loginacc.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this,AuthActivity.class));
-            finish();
-        });
-
-        boolean isNetworkAvail=checkConnection();
+        CheckNetwork network = new CheckNetwork(getApplicationContext());
+        network.registerNetworkCallback();
+//        boolean isNetworkAvail=checkConnection();
         auth=FirebaseAuth.getInstance();
         database=FirebaseDatabase.getInstance();
         dialog=new ProgressDialog(MainActivity.this);
@@ -64,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                 binding.passfield.setError("Can't be blank");
                 binding.retypepass.setError("Can't be blank");
             } else {
-                if(isNetworkAvail){
+                if(Variables.isNetworkConnected){
                     dialog.show();
                     String email = String.valueOf(binding.mailfield.getText());
                     String pass = String.valueOf(binding.passfield.getText());
@@ -96,16 +94,27 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                 }
             }
         });
+        binding.loginacc.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this,AuthActivity.class));
+            finish();
+        });
     }
 
     private void showEnableMobileDataDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setMessage("Do you want to enable mobile data?");
-        builder.setCancelable(false);
-        builder.setPositiveButton("Yes", (dialog, which) -> enableMobileData());
-        builder.setNegativeButton("No", (dialog, which) -> dialog.cancel());
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        new MaterialAlertDialogBuilder(getApplicationContext())
+                .setTitle("Alert!")
+                .setMessage("Do you want to enable mobile data?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        enableMobileData();
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(MainActivity.this, "Internet connection required to create account.", Toast.LENGTH_SHORT).show();
+                    }
+                }).setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss());
     }
 
     private void enableMobileData() {
@@ -156,6 +165,22 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         if (flag) {
             showEnableMobileDataDialog();
         }
+    }
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if ( v instanceof EditText) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)ev.getRawX(), (int)ev.getRawY())) {
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
     @Override
     protected void onResume() {
