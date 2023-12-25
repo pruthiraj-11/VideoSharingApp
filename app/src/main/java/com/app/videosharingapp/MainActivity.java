@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(MainActivity.this, "Internet connection required to create account.", Toast.LENGTH_SHORT).show();
                     }
-                }).setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss());
+                }).setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss()).show();
     }
 
     private void enableMobileData() {
