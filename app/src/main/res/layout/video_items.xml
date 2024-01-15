@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
 
     <FrameLayout
+        android:id="@+id/frameLayout3"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -17,7 +18,7 @@
             android:id="@+id/videoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center" />
     </FrameLayout>
 
     <de.hdodenhof.circleimageview.CircleImageView
@@ -66,6 +67,20 @@
         app:layout_constraintBottom_toTopOf="@+id/dislikebtn"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/likescount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="0"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/dislikebtn"
+        app:layout_constraintEnd_toEndOf="@+id/likebtn"
+        app:layout_constraintStart_toStartOf="@+id/likebtn"
+        app:layout_constraintTop_toBottomOf="@+id/likebtn" />
+
     <ImageView
         android:id="@+id/dislikebtn"
         android:layout_width="48dp"
@@ -75,6 +90,20 @@
         android:src="@drawable/round_thumb_down_off_alt_24"
         app:layout_constraintBottom_toTopOf="@+id/commentbtn"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/dislikecount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="0"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/commentbtn"
+        app:layout_constraintEnd_toEndOf="@+id/dislikebtn"
+        app:layout_constraintStart_toStartOf="@+id/dislikebtn"
+        app:layout_constraintTop_toBottomOf="@+id/dislikebtn" />
 
     <ImageView
         android:id="@+id/commentbtn"
@@ -86,14 +115,39 @@
         app:layout_constraintBottom_toTopOf="@+id/sharebtn"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/commentscount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="0"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/sharebtn"
+        app:layout_constraintEnd_toEndOf="@+id/commentbtn"
+        app:layout_constraintStart_toStartOf="@+id/commentbtn"
+        app:layout_constraintTop_toBottomOf="@+id/commentbtn" />
+
     <ImageView
         android:id="@+id/sharebtn"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="154dp"
+        android:layout_marginBottom="174dp"
         android:src="@drawable/round_share_24"
         app:layout_constraintBottom_toTopOf="@+id/usernameid"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/play_arrow"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/play_arrow"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

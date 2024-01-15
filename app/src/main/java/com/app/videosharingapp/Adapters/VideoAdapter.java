@@ -36,10 +36,10 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoHolder>
     @Override
     public void onBindViewHolder(@NonNull VideoHolder holder, int position) {
         Uri uri = Uri.parse(list.get(position).getVideoURL());
+        holder.binding.usernameid.setText(list.get(position).getUsername());
         holder.binding.videoView.setVideoURI(uri);
-//        holder.binding.usernameid.setText(list.get(position).getUsername());
 
-//        Picasso.get().lo
+        Picasso.get().load(list.get(position).getProfileURL()).centerCrop().placeholder(R.drawable.ic_action_name).into(holder.binding.userprofilepic);
 
         holder.binding.videoView.setOnPreparedListener(mediaPlayer -> {
             mediaPlayer.start();
@@ -55,12 +55,26 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoHolder>
             if(isPlaying){
                 holder.binding.videoView.pause();
                 isPlaying=false;
+                holder.binding.playArrow.setVisibility(View.VISIBLE);
             } else {
+                holder.binding.playArrow.setVisibility(View.GONE);
                 holder.binding.videoView.resume();
                 isPlaying=true;
             }
         });
+        holder.binding.likebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.binding.likescount.setText(String.valueOf(Integer.parseInt((String) holder.binding.likescount.getText())+1));
 
+            }
+        });
+        holder.binding.dislikebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.binding.dislikecount.setText(String.valueOf(Integer.parseInt((String) holder.binding.dislikecount.getText())+1));
+            }
+        });
     }
 
     @Override

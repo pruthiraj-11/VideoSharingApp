@@ -33,12 +33,15 @@ import com.app.videosharingapp.Models.UserModel;
 import com.app.videosharingapp.Models.VideoModel;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.FragmentCreateBinding;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -90,11 +93,23 @@ public class CreateFragment extends Fragment {
                     storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").child(videoID).setValue(uri.toString());
+                            firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).child("uploaded_videos").child(videoID).setValue(uri.toString());
                         }
                     });
                     dialog.dismiss();
-                    Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(),"Video uploaded successfully.",Toast.LENGTH_SHORT).show();
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        dialog.dismiss();
+                        Toast.makeText(requireContext(), "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                        double progress = (100.0 * snapshot.getBytesTransferred() / snapshot.getTotalByteCount());
+                        dialog.setMessage("Uploaded " + (int) progress + "%");
+                }
                 });
             } else {
                 dialog.dismiss();
