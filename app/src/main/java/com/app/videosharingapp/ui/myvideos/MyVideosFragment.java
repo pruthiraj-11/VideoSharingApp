@@ -1,16 +1,14 @@
 package com.app.videosharingapp.ui.myvideos;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.app.videosharingapp.R;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.app.videosharingapp.databinding.FragmentMyVideosBinding;
-import com.app.videosharingapp.databinding.FragmentProfileBinding;
 
 public class MyVideosFragment extends Fragment {
 
@@ -18,9 +16,15 @@ public class MyVideosFragment extends Fragment {
 
     public MyVideosFragment() {}
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentMyVideosBinding.inflate(inflater, container, false);
 
         return binding.getRoot();
+//        RequestOptions requestOptions = new RequestOptions();
+//        Glide.with(requireContext())
+//                .load("Your URL")
+//                .apply(requestOptions)
+//                .thumbnail(Glide.with(requireContext()).load("Your URL"))
+//                .into(binding.img_video_attachment_preview);
     }
 }

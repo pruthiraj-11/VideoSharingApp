@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.videosharingapp.Models.VideoModel;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.VideoItemsBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -38,7 +40,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoHolder>
         Uri uri = Uri.parse(list.get(position).getVideoURL());
         holder.binding.usernameid.setText(list.get(position).getUsername());
         holder.binding.videoView.setVideoURI(uri);
-
+        holder.binding.likescount.setText(list.get(position).getLikescount()+"");
+        holder.binding.dislikecount.setText(list.get(position).getDislikescount()+"");
         Picasso.get().load(list.get(position).getProfileURL()).centerCrop().placeholder(R.drawable.ic_action_name).into(holder.binding.userprofilepic);
 
         holder.binding.videoView.setOnPreparedListener(mediaPlayer -> {
@@ -66,7 +69,6 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoHolder>
             @Override
             public void onClick(View v) {
                 holder.binding.likescount.setText(String.valueOf(Integer.parseInt((String) holder.binding.likescount.getText())+1));
-
             }
         });
         holder.binding.dislikebtn.setOnClickListener(new View.OnClickListener() {

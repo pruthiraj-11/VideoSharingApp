@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
     FirebaseDatabase database;
     ProgressDialog dialog;
     GoogleSignInClient googleSignInClient;
+    boolean flag=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,8 +67,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                     dialog.show();
                     String email = String.valueOf(binding.mailfield.getText());
                     String pass = String.valueOf(binding.passfield.getText());
-                    auth.createUserWithEmailAndPassword(email, pass).
-                            addOnCompleteListener(task -> {
+                    auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(task -> {
                                 dialog.dismiss();
                                 if (task.isSuccessful()) {
                                     UserModel user=new UserModel(Objects.requireNonNull(binding.uname.getText()).toString(),email,pass);
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                                 }
                             });
                 } else {
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"No connection.",Toast.LENGTH_SHORT).show();
                     showEnableMobileDataDialog();
                 }
             }
@@ -109,12 +109,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                     public void onClick(DialogInterface dialog, int which) {
                         enableMobileData();
                     }
-                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(MainActivity.this, "Internet connection required to create account.", Toast.LENGTH_SHORT).show();
-                    }
-                }).setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss()).show();
+                }).setNegativeButton("No", (dialog, which) -> Toast.makeText(MainActivity.this, "Internet connection required to create account.", Toast.LENGTH_SHORT).show()).setNeutralButton("Cancel", (dialog, which) -> dialog.dismiss()).show();
     }
 
     private void enableMobileData() {
@@ -151,7 +146,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
     private void showSnackBar(boolean isConnected) {
         String message;
         int color;
-        boolean flag=false;
         if (isConnected) {
             message = "Back online";
             color = Color.WHITE;
@@ -185,16 +179,22 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
     @Override
     protected void onResume() {
         super.onResume();
-        checkConnection();
+//        checkConnection();
+        CheckNetwork network = new CheckNetwork(getApplicationContext());
+        network.registerNetworkCallback();
+        showSnackBar(Variables.isNetworkConnected);
     }
     @Override
     protected void onPause() {
         super.onPause();
-        checkConnection();
+//        checkConnection();
+        CheckNetwork network = new CheckNetwork(getApplicationContext());
+        network.registerNetworkCallback();
+        showSnackBar(Variables.isNetworkConnected);
     }
 
     @Override
     public void onNetworkChange(boolean isConnected) {
-        showSnackBar(isConnected);
+//        showSnackBar(isConnected);
     }
 }

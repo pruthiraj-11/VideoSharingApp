@@ -6,10 +6,34 @@ public class VideoModel {
     String videoURL;
     String profileURL;
     String username;
-    String videothumbnailpic;
     int likescount;
     int dislikescount;
     ArrayList<String> commentsList;
+
+    public int getLikescount() {
+        return likescount;
+    }
+
+    public void setLikescount(int likescount) {
+        this.likescount = likescount;
+    }
+
+    public int getDislikescount() {
+        return dislikescount;
+    }
+
+    public void setDislikescount(int dislikescount) {
+        this.dislikescount = dislikescount;
+    }
+
+    public ArrayList<String> getCommentsList() {
+        return commentsList;
+    }
+
+    public void setCommentsList(ArrayList<String> commentsList) {
+        this.commentsList = commentsList;
+    }
+
     public VideoModel(){}
     public VideoModel(String videoURL, String profileURL, String username) {
         this.videoURL= videoURL;

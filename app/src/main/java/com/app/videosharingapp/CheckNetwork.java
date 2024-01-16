@@ -5,6 +5,8 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkRequest;
 
+import androidx.annotation.NonNull;
+
 public class CheckNetwork {
     private final Context context;
     public CheckNetwork(Context context) {
@@ -16,11 +18,11 @@ public class CheckNetwork {
             NetworkRequest.Builder builder = new NetworkRequest.Builder();
             connectivityManager.registerDefaultNetworkCallback(new ConnectivityManager.NetworkCallback(){
                                                                    @Override
-                                                                   public void onAvailable(Network network) {
+                                                                   public void onAvailable(@NonNull Network network) {
                                                                        Variables.isNetworkConnected = true;
                                                                    }
                                                                    @Override
-                                                                   public void onLost(Network network) {
+                                                                   public void onLost(@NonNull Network network) {
                                                                        Variables.isNetworkConnected = false;
                                                                    }
                                                                });

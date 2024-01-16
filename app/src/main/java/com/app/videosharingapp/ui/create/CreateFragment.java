@@ -37,11 +37,15 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -61,11 +65,12 @@ public class CreateFragment extends Fragment {
     Recording recording = null;
     VideoCapture<Recorder> videoCapture = null;
     int cameraFacing = CameraSelector.LENS_FACING_BACK;
+    String profilepicURL="";
+    String username="";
+    int videosCount=0;
     private final int REQUEST_CODE_PERMISSIONS = 1001;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
-    public CreateFragment() {
-
-    }
+    public CreateFragment() {}
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,7 +164,7 @@ public class CreateFragment extends Fragment {
             } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
                 if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
 //                    String msg = "Video capture succeeded: " + ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
-                    Toast.makeText(getContext(), "Video capture succeeded", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Video capture succeeded.", Toast.LENGTH_SHORT).show();
                     dialog.show();
                     String videoID = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.getDefault()).format(System.currentTimeMillis());
                     final StorageReference storageReference= firebaseStorage.getReference().child("uploaded_videos").child(Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid()).child("post_videos").child(videoID);
@@ -167,12 +172,32 @@ public class CreateFragment extends Fragment {
                         storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
-                                firebaseDatabase.getReference().child("Users").child(firebaseAuth.getUid()).child("uploaded_videos").child(videoID).setValue(uri.toString());
+                                firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()){
+                                            UserModel userModel=snapshot.getValue(UserModel.class);
+                                            profilepicURL=Objects.requireNonNull(userModel).getProfilepicURL();
+                                            username=Objects.requireNonNull(userModel).getUsername();
+                                            videosCount=Objects.requireNonNull(userModel).getVideosCount();
+                                        }
+                                    }
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+//                                        Toast.makeText(requireContext(),error.getMessage(),Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                VideoModel videoModel = new VideoModel();
+                                videoModel.setVideoURL(uri.toString());
+                                videoModel.setProfileURL(profilepicURL);
+                                videoModel.setUsername(username);
+                                firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).child("uploaded_videos").child(videoID).setValue(videoModel);
                             }
                         });
+                        firebaseDatabase.getReference().child("Users").child(Objects.requireNonNull(firebaseAuth.getUid())).child("videosCount").setValue(videosCount+1);
                         dialog.dismiss();
                         Toast.makeText(getContext(),"Uploaded",Toast.LENGTH_SHORT).show();
-                    }).addOnCanceledListener(() -> Toast.makeText(getContext(),"Cancelled by the user",Toast.LENGTH_SHORT).show()).addOnFailureListener(e -> Toast.makeText(getContext(), e.getMessage(),Toast.LENGTH_SHORT).show());
+                    }).addOnCanceledListener(() -> Toast.makeText(getContext(),"Cancelled by the user.",Toast.LENGTH_SHORT).show()).addOnFailureListener(e -> Toast.makeText(getContext(), e.getMessage(),Toast.LENGTH_SHORT).show());
                 } else {
                     if(recording!=null){
                         recording.close();
@@ -193,16 +218,11 @@ public class CreateFragment extends Fragment {
                 ProcessCameraProvider cameraProvider = processCameraProvider.get();
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
-
                 Recorder recorder = new Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build();
                 videoCapture = VideoCapture.withOutput(recorder);
-
                 cameraProvider.unbindAll();
-
                 CameraSelector cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraFacing).build();
-
                 Camera camera = cameraProvider.bindToLifecycle(getViewLifecycleOwner(), cameraSelector, preview, videoCapture);
-
                 binding.toggleFlash.setOnClickListener(view -> toggleFlash(camera));
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
