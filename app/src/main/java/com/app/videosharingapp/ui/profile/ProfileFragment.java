@@ -1,19 +1,15 @@
 package com.app.videosharingapp.ui.profile;
 
 import static android.app.Activity.RESULT_OK;
-import static android.content.Context.MODE_PRIVATE;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +24,8 @@ import com.app.videosharingapp.Adapters.FragmentAdapter;
 import com.app.videosharingapp.Models.UserModel;
 import com.app.videosharingapp.R;
 import com.app.videosharingapp.databinding.FragmentProfileBinding;
+import com.app.videosharingapp.ui.UserFollowersActivity;
+import com.app.videosharingapp.ui.UserFollowingActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,8 +39,6 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
 import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
@@ -73,9 +69,9 @@ public class ProfileFragment extends Fragment {
                     UserModel userModel=snapshot.getValue(UserModel.class);
                     Picasso.get().load(Objects.requireNonNull(userModel).getProfilepicURL()).placeholder(R.drawable.ic_action_name).into(binding.userdp);
                     binding.useridprofile.setText(Objects.requireNonNull(userModel).getUsername());
-                    binding.followerscount.setText(userModel.getFollowersCount()+"");
-                    binding.followingcount.setText(userModel.getFollowingCount()+"");
-                    binding.videoscount.setText(userModel.getVideosCount()+"");
+                    binding.followerscount.setText(String.valueOf(Objects.requireNonNull(userModel).getFollowersCount()));
+                    binding.followingcount.setText(String.valueOf(Objects.requireNonNull(userModel).getFollowingCount()));
+                    binding.videoscount.setText(String.valueOf(Objects.requireNonNull(userModel).getVideosCount()));
                 }
             }
             @Override
@@ -147,6 +143,18 @@ public class ProfileFragment extends Fragment {
                 activityResultLauncher.launch("image/*");
             });
             bottomSheetDialog.show();
+        });
+        binding.followerscount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), UserFollowersActivity.class));
+            }
+        });
+        binding.followingcount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), UserFollowingActivity.class));
+            }
         });
         return root;
     }
